@@ -1,0 +1,59 @@
+---
+import '../styles/global.css';
+import { site } from '../data/site';
+
+interface Props {
+  title?: string;
+  description?: string;
+}
+const {
+  title = `${site.name} | ${site.role}`,
+  description = 'Dio Diadon, musisi dan pendakwah Gen Z. Dakwah reflektif dengan iringan gitar akustik untuk sekolah, kampus, komunitas, dan masjid.',
+} = Astro.props;
+
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'Person',
+  name: 'Dio A. Diadon',
+  alternateName: site.name,
+  jobTitle: site.role,
+  description,
+  sameAs: Object.values(site.socials),
+};
+---
+
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <meta name="theme-color" content="#F6F3EA" />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta name="twitter:card" content="summary_large_image" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
+    <noscript><style>.reveal{opacity:1}</style></noscript>
+  </head>
+  <body>
+    <slot />
+    <script>
+      // Muncul bertahap saat di-scroll
+      const io = new IntersectionObserver(
+        (entries) => {
+          for (const e of entries) {
+            if (e.isIntersecting) {
+              e.target.classList.add('in');
+              io.unobserve(e.target);
+            }
+          }
+        },
+        { threshold: 0.12 },
+      );
+      document.querySelectorAll('.reveal').forEach((el) => io.observe(el));
+    </script>
+  </body>
+</html>

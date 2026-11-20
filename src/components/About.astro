@@ -1,0 +1,42 @@
+---
+import { Image } from 'astro:assets';
+import dio from '../assets/dio.png';
+
+const tags = [
+  { t: 'Dakwah Reflektif', bg: '#f7d84a' },
+  { t: 'Live Akustik', bg: '#f2789f' },
+  { t: 'Gen Z', bg: '#5cc98a' },
+  { t: 'Marbot Masjid', bg: '#7468f2', fg: '#fff' },
+  { t: 'Talkshow', bg: '#ee6a1f' },
+];
+---
+
+<section id="tentang" class="mx-auto max-w-4xl px-5 py-16">
+  <p class="hand mb-2 text-2xl text-ink/60">tentang aku ~</p>
+  <h2 class="scribble-box mx-auto mb-10 w-fit px-5 py-1 pixel text-2xl sm:text-3xl">apa kabar?</h2>
+
+  <div class="grid items-center gap-10 md:grid-cols-[1fr_1.5fr_1fr]">
+    <figure class="polaroid tape tilt mx-auto w-44 sm:w-52 md:order-1" style="--r:-4deg;--tape:rgb(122 170 255 / .7)">
+      <Image src={dio} alt="Dio Diadon" width={320} height={400} class="aspect-[4/5] w-full object-cover object-top" />
+      <figcaption>dio ✌️</figcaption>
+    </figure>
+
+    <div class="order-first text-center md:order-2">
+      <p class="hand text-[1.6rem] leading-snug sm:text-[1.9rem]">
+        Aku Dio, anak muda yang percaya kalau ngaji itu bisa asik. Sehari-hari jadi marbot masjid, malamnya megang gitar.
+        Aku peduli sama hal-hal yang sering dibahas pelan-pelan di kamar: cinta, keluarga, duit, circle, dan capeknya kepala.
+        Starday lahir dari situ, ngobrol jujur, nyanyi bareng, lalu pulang dengan hati yang lebih ringan. 🎶
+      </p>
+      <ul class="mt-6 flex flex-wrap items-center justify-center gap-2" aria-label="Peran">
+        {tags.map((t) => <li class="torn" style={`--bg:${t.bg};color:${t.fg ?? '#151515'}`}>{t.t}</li>)}
+      </ul>
+    </div>
+
+    <figure class="polaroid tape tilt mx-auto w-44 sm:w-52 md:order-3" style="--r:3deg;--tape:rgb(247 216 74 / .8)">
+      <div class="ph aspect-[4/5]" role="img" aria-label="Placeholder foto manggung">
+        <span>📷<br />foto manggung<br />(dummy)</span>
+      </div>
+      <figcaption>lagi ngisi acara</figcaption>
+    </figure>
+  </div>
+</section>

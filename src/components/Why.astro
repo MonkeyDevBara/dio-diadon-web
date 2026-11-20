@@ -1,0 +1,40 @@
+---
+import { issues } from '../data/site';
+const struck = ['bosen', 'monoton', 'ngantuk', 'tidak related'];
+---
+
+<section id="kenapa" class="mx-auto max-w-5xl px-5 py-16">
+  <div class="text-center">
+    <h2 class="bubble text-2xl sm:text-4xl">Latar belakang</h2>
+  </div>
+  <p class="mx-auto mt-10 max-w-xl text-center text-lg font-semibold text-ink/80">
+    Gen Z lagi berantem sama banyak hal. Tapi pengajian sering terasa…
+  </p>
+
+  <ul class="mt-5 flex flex-wrap items-center justify-center gap-3" aria-label="Keluhan soal pengajian">
+    {struck.map((s, i) => (
+      <li class="note tilt reveal" style={`--r:${i % 2 ? 2 : -3}deg;--bg:#f2c2d6;--i:${i}`}>
+        <span class="strike">{s}</span>
+      </li>
+    ))}
+  </ul>
+
+  <ul class="mt-14 grid grid-cols-2 gap-x-4 gap-y-10 sm:grid-cols-3 lg:grid-cols-5">
+    {issues.map((it, i) => (
+      <li class="reveal" style={`--i:${i};--r:${it.rot}deg`}>
+        <figure class="polaroid tilt h-full" style={`--r:${it.rot}deg`}>
+          <div class="ph relative flex aspect-square flex-col gap-1 p-3" style={`--ph:${it.tint}`}>
+            <span class="pixel text-xs">0{i + 1}</span>
+            <p class="hand text-[1.15rem] leading-tight text-ink/80 normal-case tracking-normal">{it.note}</p>
+          </div>
+          <figcaption class="!font-sans !text-sm !font-extrabold uppercase tracking-wide">{it.title}</figcaption>
+        </figure>
+      </li>
+    ))}
+  </ul>
+
+  <div class="mt-14 text-center">
+    <p class="hand text-2xl text-ink/70">terus solusinya?</p>
+    <a href="#starday" class="btn mt-3">Kenalan sama Starday ↓</a>
+  </div>
+</section>

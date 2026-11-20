@@ -1,0 +1,52 @@
+---
+import { places, placeFilters } from '../data/site';
+const bg: Record<string, string> = {
+  sekolah: '#f7d84a',
+  kampus: '#9ad9b4',
+  masjid: '#cfc9ff',
+  komunitas: '#f9c7d8',
+  media: '#ffd2a8',
+};
+---
+
+<section id="jejak" class="mx-auto max-w-5xl px-5 py-16">
+  <h2 class="pixel text-center text-3xl sm:text-4xl">Pernah mampir ke…</h2>
+  <p class="hand mt-1 text-center text-2xl text-ink/60">sebagian jejaknya ✌️</p>
+
+  <div class="mt-8 flex flex-wrap justify-center gap-2" role="group" aria-label="Filter jejak">
+    {placeFilters.map((f, i) => (
+      <button
+        type="button"
+        data-filter={f.key}
+        aria-pressed={i === 0}
+        class="mono rounded-lg border-2 border-ink bg-white px-3 py-1.5 text-xs aria-pressed:bg-ink aria-pressed:text-white"
+      >{f.label}</button>
+    ))}
+  </div>
+
+  <ul class="mt-10 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4" id="places">
+    {places.map((p, i) => (
+      <li data-cat={p.cat} class="tilt" style={`--r:${((i * 37) % 7) - 3}deg`}>
+        <div class="note h-full !text-lg" style={`--bg:${bg[p.cat]}`}>
+          <span class="mono block text-[0.55rem] opacity-60">{p.cat}</span>
+          {p.name}
+          <span class="mono mt-1 block text-[0.6rem] opacity-60">📍 {p.city}</span>
+        </div>
+      </li>
+    ))}
+  </ul>
+  <p class="hand mt-6 text-center text-lg text-ink/50">*nama tempat dummy</p>
+</section>
+
+<script>
+  const btns = document.querySelectorAll<HTMLButtonElement>('[data-filter]');
+  const items = document.querySelectorAll<HTMLElement>('#places li');
+  btns.forEach((b) =>
+    b.addEventListener('click', () => {
+      btns.forEach((x) => x.setAttribute('aria-pressed', String(x === b)));
+      items.forEach((li) => {
+        li.hidden = !(b.dataset.filter === 'all' || li.dataset.cat === b.dataset.filter);
+      });
+    }),
+  );
+</script>

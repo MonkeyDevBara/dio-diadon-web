@@ -1,0 +1,35 @@
+---
+import Layout from '../layouts/Layout.astro';
+import { rider, site } from '../data/site';
+
+const sections = [
+  { t: 'Tim & transportasi', items: [rider.team] },
+  { t: 'Dibawa tim Starday', items: rider.bring },
+  { t: 'Disiapkan panitia', items: rider.need },
+  { t: 'Panggung', items: [rider.stage] },
+  { t: 'Tempat & jarak', items: [rider.place] },
+  { t: 'Pemisahan jamaah', items: [rider.seating] },
+];
+---
+
+<Layout title="Rider Teknis | Dio Diadon" description="Kebutuhan teknis untuk mengundang Dio Diadon / Starday.">
+  <main class="mx-auto max-w-2xl px-5 py-12">
+    <a href="/" class="mono no-print text-xs underline">← kembali</a>
+    <h1 class="pixel mt-6 text-4xl">Rider Teknis</h1>
+    <p class="hand text-2xl text-ink/60">Dio Diadon · Starday</p>
+
+    <div class="mt-8 space-y-6">
+      {sections.map((s, i) => (
+        <section class="border-2 border-ink bg-white p-5 break-inside-avoid">
+          <h2 class="mono text-xs text-ink/70"><span class="text-ink">{String(i + 1).padStart(2, '0')}.</span> {s.t}</h2>
+          <ul class="mt-2 list-disc space-y-1 pl-5">
+            {s.items.map((it) => <li>{it}</li>)}
+          </ul>
+        </section>
+      ))}
+    </div>
+
+    <p class="mt-8 text-sm">Pertanyaan atau konfirmasi: WhatsApp <strong>+{site.whatsapp}</strong> (dummy).</p>
+    <button onclick="print()" class="btn no-print mt-6">🖨 Cetak halaman ini</button>
+  </main>
+</Layout>

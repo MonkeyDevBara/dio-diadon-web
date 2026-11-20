@@ -1,0 +1,55 @@
+---
+import { Image } from 'astro:assets';
+import dio from '../assets/dio.png';
+import { site } from '../data/site';
+---
+
+<section id="beranda" class="relative mx-auto max-w-4xl px-5 pb-16 pt-14 text-center sm:pt-20">
+  <!-- sticky notes -->
+  <p class="note tilt absolute left-3 top-6 hidden text-base sm:block md:left-10" style="--r:-4deg;--bg:#9ad9b4">tukang gitar 🎸</p>
+  <p class="note tilt absolute right-3 top-10 hidden text-base sm:block md:right-10" style="--r:3deg;--bg:#f7d84a">marbot masjid 🕌</p>
+
+  <p class="hand text-xl text-ink/70 sm:text-2xl">assalamu'alaikum, namaku</p>
+
+  <h1 class="sr-only">Dio Diadon, musisi dan pendakwah Gen Z</h1>
+  <div class="scribble-box relative mx-auto mt-2 inline-block px-6 py-3 sm:px-10 sm:py-5" aria-hidden="true">
+    <span class="pixel block text-[2.6rem] leading-none tracking-wide sm:text-7xl">DIO DIADON</span>
+  </div>
+
+  <div class="mt-5 flex flex-wrap items-center justify-center gap-x-4 gap-y-2">
+    <span class="torn" style="--bg:#f7d84a">{site.role}</span>
+    <span class="mono flex items-center gap-2 text-[0.7rem]">
+      <span class:list={['h-2.5 w-2.5 rounded-full', site.bookingStatus.open ? 'bg-mint' : 'bg-ink/30']} aria-hidden="true"></span>
+      {site.bookingStatus.open ? site.bookingStatus.label : 'jadwal penuh, tetap kirim pesan'}
+    </span>
+  </div>
+
+  <!-- avatar + gelembung -->
+  <div class="mt-10 flex items-end justify-center gap-3">
+    <div class="relative">
+      <span class="bubble floaty absolute -top-9 left-[68%] z-10 whitespace-nowrap !border-[3px] !px-4 !py-2 !text-sm sm:!text-base" style="--r:-3deg">Salam kenal</span>
+      <Image
+        src={dio}
+        alt="Foto Dio Diadon tersenyum memakai sweater oranye"
+        width={224}
+        height={224}
+        loading="eager"
+        class="h-28 w-28 rounded-full border-[5px] border-white bg-white object-cover object-[50%_12%] shadow-[0_0_0_3px_#EE6A1F,0_10px_24px_rgba(0,0,0,.2)] sm:h-36 sm:w-36"
+      />
+    </div>
+  </div>
+
+  <p class="mx-auto mt-8 max-w-2xl text-3xl font-extrabold leading-[1.1] tracking-tight sm:text-5xl">
+    Ngaji bareng, pakai <span class="whitespace-nowrap">gitar
+    <span class="inline-grid h-8 w-8 place-items-center rounded-full bg-dio align-middle text-base sm:h-11 sm:w-11 sm:text-2xl" aria-hidden="true">🎸</span></span>
+    biar dakwah nggak bikin <span class="whitespace-nowrap">ngantuk
+    <span class="inline-grid h-8 w-8 place-items-center rounded-full bg-bubblegum align-middle text-base sm:h-11 sm:w-11 sm:text-2xl" aria-hidden="true">✨</span></span>
+  </p>
+
+  <div class="mt-9 flex flex-wrap items-center justify-center gap-4">
+    <a href="#undang" class="btn">✉ Undang Dio</a>
+    <a href="#starday" class="btn btn-ghost">Lihat program</a>
+  </div>
+
+  <p class="hand mt-10 text-xl text-ink/60" aria-hidden="true">scroll ya ↓</p>
+</section>

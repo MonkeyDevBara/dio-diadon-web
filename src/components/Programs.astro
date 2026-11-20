@@ -1,0 +1,53 @@
+---
+import { programs } from '../data/site';
+
+const theme = {
+  ink: { card: 'bg-ink text-white', tab: 'bg-navy text-white', chip: 'bg-white/15 text-white' },
+  sun: { card: 'bg-sun text-ink', tab: 'bg-ink text-white', chip: 'bg-ink/10 text-ink' },
+  grape: { card: 'bg-grape text-white', tab: 'bg-sun text-navy', chip: 'bg-white/20 text-white' },
+} as const;
+---
+
+<section id="starday" class="mx-auto max-w-5xl px-5 py-16">
+  <div class="text-center">
+    <h2 class="bubble text-3xl sm:text-5xl">Solusi kami</h2>
+  </div>
+  <p class="mx-auto mt-10 max-w-2xl text-center text-lg">
+    <strong>Starday</strong> adalah program dakwah reflektif: kajian ringan plus live musik akustik. Fokusnya Gen Z, tapi terbuka untuk semua kalangan.
+    Pilih format yang cocok buat tempatmu.
+  </p>
+
+  <ul class="mt-12 grid gap-8 md:grid-cols-2">
+    {programs.map((p, i) => {
+      const t = theme[p.theme];
+      return (
+        <li class="reveal" style={`--i:${i}`}>
+          <article class:list={['tape group relative h-full p-6 pt-9 shadow-[6px_6px_0_rgb(0_0_0/.15)]', t.card]} style={`--tape:rgb(255 255 255 / .55);--tape-r:${i % 2 ? 3 : -3}deg`}>
+            <span class:list={['tab-label absolute -top-3 left-4', t.tab]}>PROGRAM {p.no}</span>
+            <div class="flex items-start justify-between gap-4">
+              <h3 class="text-3xl font-extrabold leading-tight sm:text-4xl">{p.title}</h3>
+              <span class="text-4xl transition-transform group-hover:-rotate-12 group-hover:scale-110" aria-hidden="true">{p.emoji}</span>
+            </div>
+            <p class="mt-3 max-w-md leading-relaxed opacity-90">{p.summary}</p>
+            <ul class="mt-5 flex flex-wrap gap-2" aria-label="Cocok untuk">
+              {p.audience.map((a) => <li class:list={['mono rounded px-2 py-1 text-[0.65rem]', t.chip]}>{a}</li>)}
+            </ul>
+            <a href={`#undang`} data-program={p.slug} class="mono mt-6 inline-block border-b-2 border-current pb-0.5 text-xs font-bold">
+              Undang untuk {p.title.replace('Go to ', '')} →
+            </a>
+          </article>
+        </li>
+      );
+    })}
+  </ul>
+</section>
+
+<script>
+  // Klik "Undang untuk X" mengisi jenis acara di form
+  document.querySelectorAll<HTMLAnchorElement>('[data-program]').forEach((a) => {
+    a.addEventListener('click', () => {
+      const sel = document.querySelector<HTMLSelectElement>('#f-jenis');
+      if (sel) sel.value = a.dataset.program!;
+    });
+  });
+</script>

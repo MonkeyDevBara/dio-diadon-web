@@ -1,0 +1,131 @@
+---
+import { site, rider } from '../data/site';
+
+const jenis = [
+  ['school', 'Sekolah'],
+  ['kampus', 'Kampus'],
+  ['komunitas', 'Komunitas'],
+  ['masjid', 'Masjid'],
+  ['lainnya', 'Lainnya'],
+];
+const field = 'mt-1 w-full rounded-md border-2 border-ink bg-white px-3 py-2.5 text-base focus:border-dio';
+const label = 'mono block text-[0.7rem]';
+---
+
+<section id="undang" class="mx-auto max-w-5xl px-5 py-16" data-wa={site.whatsapp}>
+  <div class="text-center">
+    <h2 class="bubble text-3xl sm:text-5xl">Undang Dio</h2>
+  </div>
+  <p class="mx-auto mt-10 max-w-xl text-center text-lg">
+    Isi form singkat ini, nanti otomatis jadi pesan WhatsApp ke tim Starday. Tidak ada data yang disimpan di website.
+  </p>
+
+  <div class="mt-12 grid gap-10 lg:grid-cols-[1.1fr_1fr]">
+    <form id="invite" class="tape scribble-box space-y-4 bg-white p-6" style="--tape:rgb(238 106 31 / .5)" novalidate>
+      <div class="grid gap-4 sm:grid-cols-2">
+        <label class={label}>Nama kamu
+          <input class={field} name="nama" id="f-nama" required autocomplete="name" placeholder="mis. Rani" />
+        </label>
+        <label class={label}>Instansi / komunitas
+          <input class={field} name="instansi" required placeholder="mis. OSIS SMA 1" />
+        </label>
+      </div>
+      <div class="grid gap-4 sm:grid-cols-2">
+        <label class={label}>Jenis acara
+          <select class={field} name="jenis" id="f-jenis" required>
+            {jenis.map(([v, l]) => <option value={v}>{l}</option>)}
+          </select>
+        </label>
+        <label class={label}>Kota
+          <input class={field} name="kota" required autocomplete="address-level2" placeholder="mis. Purwokerto" />
+        </label>
+      </div>
+      <div class="grid gap-4 sm:grid-cols-2">
+        <label class={label}>Tanggal diinginkan
+          <input class={field} type="date" name="tanggal" id="f-tanggal" required />
+        </label>
+        <label class={label}>Perkiraan peserta
+          <input class={field} type="number" name="peserta" min="10" inputmode="numeric" required placeholder="mis. 200" />
+        </label>
+      </div>
+      <label class={label}>Catatan (opsional)
+        <textarea class={field} name="catatan" rows="3" placeholder="Tema, durasi, hal khusus…"></textarea>
+      </label>
+      <p id="f-error" class="hand min-h-[1.5rem] text-xl text-[#c22]" role="alert"></p>
+      <button class="btn w-full justify-center" type="submit">Kirim lewat WhatsApp ↗</button>
+    </form>
+
+    <aside class="space-y-6">
+      <div class="relative bg-sun p-6 shadow-[6px_6px_0_rgb(0_0_0/.15)]">
+        <h3 class="pixel text-2xl text-navy">Rider singkat</h3>
+        <p class="hand text-lg text-ink/70">biar nggak bolak-balik nanya</p>
+        <ul class="mt-4 space-y-3 text-[0.95rem] leading-snug">
+          <li><span class="hand text-xl">🚗</span> {rider.team}</li>
+          <li><span class="hand text-xl">🎸</span> <strong>Kami bawa:</strong> {rider.bring.join(', ')}.</li>
+          <li><span class="hand text-xl">🔌</span> <strong>Panitia siapkan:</strong> {rider.need.join('; ')}.</li>
+          <li><span class="hand text-xl">🪑</span> {rider.stage}</li>
+          <li><span class="hand text-xl">📍</span> {rider.place}</li>
+          <li><span class="hand text-xl">👥</span> {rider.seating}</li>
+        </ul>
+        <div class="mt-5 flex flex-wrap gap-3">
+          <a href="/rider" class="btn btn-ghost !px-4 !py-2.5 !text-[0.7rem]">Rider lengkap</a>
+          <a href={site.proposalPdf} download data-download class="btn !px-4 !py-2.5 !text-[0.7rem]">⬇ Proposal PDF</a>
+        </div>
+      </div>
+    </aside>
+  </div>
+</section>
+
+<script>
+  const root = document.querySelector<HTMLElement>('#undang')!;
+  const form = document.querySelector<HTMLFormElement>('#invite')!;
+  const err = document.querySelector<HTMLElement>('#f-error')!;
+  const date = form.elements.namedItem('tanggal') as HTMLInputElement;
+  const jenisLabel: Record<string, string> = {
+    school: 'Go to School',
+    kampus: 'Go to Kampus',
+    komunitas: 'Go to Komunitas',
+    masjid: 'Go to Masjid',
+    lainnya: 'acara lainnya',
+  };
+
+  const today = new Date();
+  date.min = new Date(today.getTime() - today.getTimezoneOffset() * 60000).toISOString().slice(0, 10);
+
+  form.addEventListener('input', () => (err.textContent = ''));
+
+  form.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const d = new FormData(form);
+    const val = (k: string) => String(d.get(k) ?? '').trim();
+
+    const missing = ['nama', 'instansi', 'kota', 'tanggal', 'peserta'].find((k) => !val(k));
+    if (missing) {
+      err.textContent = 'Eh, masih ada yang kosong nih. Lengkapi dulu ya 🙏';
+      (form.elements.namedItem(missing) as HTMLElement).focus();
+      return;
+    }
+    if (val('tanggal') < date.min) {
+      err.textContent = 'Tanggalnya sudah lewat. Pilih tanggal yang akan datang ya.';
+      date.focus();
+      return;
+    }
+
+    const tgl = new Date(val('tanggal') + 'T00:00').toLocaleDateString('id-ID', {
+      weekday: 'long', day: 'numeric', month: 'long', year: 'numeric',
+    });
+    const text = [
+      "Assalamu'alaikum Kak Dio, perkenalkan saya " + val('nama') + ' dari ' + val('instansi') + '.',
+      '',
+      'Kami ingin mengundang ' + jenisLabel[val('jenis')] + ':',
+      '• Kota: ' + val('kota'),
+      '• Tanggal: ' + tgl,
+      '• Perkiraan peserta: ' + val('peserta') + ' orang',
+      val('catatan') ? '• Catatan: ' + val('catatan') : '',
+      '',
+      'Mohon info ketersediaan dan rinciannya. Terima kasih 🙏',
+    ].filter((l, i, a) => l !== '' || a[i - 1] !== '').join('\n');
+
+    window.open('https://wa.me/' + root.dataset.wa + '?text=' + encodeURIComponent(text), '_blank', 'noopener');
+  });
+</script>

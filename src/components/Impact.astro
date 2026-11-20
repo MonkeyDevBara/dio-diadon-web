@@ -1,0 +1,54 @@
+---
+import { stats } from '../data/site';
+const fmt = (n: number) => String(n).replace('.', ',');
+---
+
+<section id="dampak" class="bg-ink py-16 text-white">
+  <div class="mx-auto max-w-5xl px-5">
+    <div class="text-center">
+      <h2 class="bubble text-3xl sm:text-5xl">Hasilnya</h2>
+    </div>
+
+    <ul class="mt-14 grid grid-cols-2 gap-x-4 gap-y-10 lg:grid-cols-4">
+      {stats.map((s, i) => (
+        <li class="reveal text-center" style={`--i:${i}`}>
+          <span
+            class="pixel block text-5xl text-sun sm:text-6xl"
+            data-count={s.value}
+            data-suffix={s.suffix}
+          >{fmt(s.value)}{s.suffix}</span>
+          <span class="mt-1 block text-sm font-bold">{s.label}</span>
+          <span class="hand block text-lg text-white/70">{s.note}</span>
+          <span class="mono mt-1 block text-[0.6rem] text-white/50">per {s.asOf}</span>
+        </li>
+      ))}
+    </ul>
+
+    <p class="hand mt-12 text-center text-xl text-white/60">*angka dummy, diganti data asli sebelum launch</p>
+  </div>
+</section>
+
+<script>
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const fmt = (n: number, dec: number) => n.toFixed(dec).replace('.', ',');
+
+  const io = new IntersectionObserver((entries) => {
+    for (const e of entries) {
+      if (!e.isIntersecting) continue;
+      io.unobserve(e.target);
+      const el = e.target as HTMLElement;
+      const to = Number(el.dataset.count);
+      const suffix = el.dataset.suffix ?? '';
+      const dec = String(to).includes('.') ? 1 : 0;
+      if (reduce) continue;
+      const t0 = performance.now();
+      const tick = (t: number) => {
+        const p = Math.min((t - t0) / 1100, 1);
+        el.textContent = fmt(to * (1 - Math.pow(1 - p, 3)), dec) + suffix;
+        if (p < 1) requestAnimationFrame(tick);
+      };
+      requestAnimationFrame(tick);
+    }
+  });
+  document.querySelectorAll('[data-count]').forEach((el) => io.observe(el));
+</script>
