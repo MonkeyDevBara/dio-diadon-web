@@ -1,15 +1,30 @@
 // Pembaca konten untuk halaman publik (hanya baris yang berstatus tampil).
+// Satu round-trip ke database memuat semuanya; hasilnya di-cache singkat per instance dan
+// otomatis dibuang saat admin menyimpan perubahan (lihat dataVersion di db.ts).
 import { videoGradients } from '../data/static';
-import { getSettings, listRows } from './db';
-import { resourceByKey } from './resources';
+import { dataVersion, loadPublic, type PublicSnapshot } from './db';
 import { uploadUrl } from './uploads';
 
-const rows = (key: string) => listRows(resourceByKey(key)!, { onlyPublished: true });
+type Snapshot = PublicSnapshot;
+
+const TTL_MS = 15_000;
+let cache: { at: number; version: number; data: Promise<Snapshot> } | null = null;
+
+function snapshot(): Promise<Snapshot> {
+  const version = dataVersion();
+  if (!cache || cache.version !== version || Date.now() - cache.at > TTL_MS) {
+    const data = loadPublic();
+    cache = { at: Date.now(), version, data };
+    data.catch(() => (cache = null));
+  }
+  return cache.data;
+}
+
 const lines = (s: string) => s.split('\n').map((l) => l.trim()).filter(Boolean);
 const rotation = [-3, 2, -1.5, 3, -2];
 
-export function getSite() {
-  const s = getSettings();
+export async function getSite() {
+  const { settings: s } = await snapshot();
   return {
     name: 'Dio Diadon',
     handle: '@diodiadon',
@@ -30,8 +45,8 @@ export function getSite() {
   };
 }
 
-export function getRider() {
-  const s = getSettings();
+export async function getRider() {
+  const { settings: s } = await snapshot();
   return {
     team: s.rider_team,
     bring: lines(s.rider_bring),
@@ -42,11 +57,14 @@ export function getRider() {
   };
 }
 
-export const getIssues = () =>
-  rows('isu').map((r, i) => ({ title: String(r.title), note: String(r.note), tint: String(r.tint), rot: rotation[i % rotation.length] }));
+export async function getIssues() {
+  const { tables } = await snapshot();
+  return tables.isu.map((r, i) => ({ title: String(r.title), note: String(r.note), tint: String(r.tint), rot: rotation[i % rotation.length] }));
+}
 
-export const getPrograms = () =>
-  rows('program').map((r, i) => ({
+export async function getPrograms() {
+  const { tables } = await snapshot();
+  return tables.program.map((r, i) => ({
     no: String(i + 1).padStart(2, '0'),
     slug: String(r.slug),
     title: String(r.title),
@@ -55,20 +73,27 @@ export const getPrograms = () =>
     theme: String(r.theme) as 'ink' | 'sun' | 'grape',
     emoji: String(r.emoji),
   }));
+}
 
-export const getStats = () =>
-  rows('dampak').map((r) => ({
+export async function getStats() {
+  const { tables } = await snapshot();
+  return tables.dampak.map((r) => ({
     value: Number(r.value),
     suffix: String(r.suffix),
     label: String(r.label),
     note: String(r.note),
     asOf: String(r.as_of),
   }));
+}
 
-export const getPlaces = () => rows('jejak').map((r) => ({ name: String(r.name), cat: String(r.cat), city: String(r.city) }));
+export async function getPlaces() {
+  const { tables } = await snapshot();
+  return tables.jejak.map((r) => ({ name: String(r.name), cat: String(r.cat), city: String(r.city) }));
+}
 
-export const getVideos = () =>
-  rows('video').map((r) => ({
+export async function getVideos() {
+  const { tables } = await snapshot();
+  return tables.video.map((r) => ({
     title: String(r.title),
     views: String(r.views),
     url: String(r.url),
@@ -76,12 +101,15 @@ export const getVideos = () =>
     grad: (videoGradients[String(r.grad)] ?? videoGradients.violet).cls,
     quote: r.quote_text ? { text: String(r.quote_text), author: String(r.quote_author) } : null,
   }));
+}
 
-export const getTestimonials = () =>
-  rows('testimoni').map((r, i) => ({
+export async function getTestimonials() {
+  const { tables } = await snapshot();
+  return tables.testimoni.map((r, i) => ({
     text: String(r.text),
     who: String(r.who),
     org: String(r.org),
     tint: String(r.tint),
     rot: [-2, 1.5, -1][i % 3],
   }));
+}

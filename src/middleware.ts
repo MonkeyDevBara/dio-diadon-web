@@ -5,7 +5,7 @@ export const onRequest = defineMiddleware(async (ctx, next) => {
   const { pathname } = ctx.url;
   if (pathname !== '/admin' && !pathname.startsWith('/admin/')) return next();
 
-  const authed = verifySession(ctx.cookies.get(COOKIE)?.value);
+  const authed = await verifySession(ctx.cookies.get(COOKIE)?.value);
   ctx.locals.admin = authed;
   if (!authed && pathname !== '/admin/login') return ctx.redirect('/admin/login');
 

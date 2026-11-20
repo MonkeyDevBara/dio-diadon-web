@@ -2,7 +2,7 @@
 import { Image } from 'astro:assets';
 import dio from '../assets/dio.png';
 import { getSite } from '../server/content';
-const site = getSite();
+const site = await getSite();
 ---
 
 <section id="beranda" class="relative mx-auto max-w-4xl px-5 pb-16 pt-14 text-center sm:pt-20">

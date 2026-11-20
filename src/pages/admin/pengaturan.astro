@@ -4,9 +4,9 @@ import FieldInput from '../../components/admin/FieldInput.astro';
 import { getSettings, saveSettings } from '../../server/db';
 import { parseForm, type Values } from '../../server/forms';
 import { settingsFields, settingsGroups } from '../../server/resources';
-import { removeUpload } from '../../server/uploads';
+import { removeUploads } from '../../server/uploads';
 
-const current = getSettings();
+const current = await getSettings();
 let values: Values = { ...current };
 let errors: Record<string, string> = {};
 
@@ -16,8 +16,8 @@ if (Astro.request.method === 'POST') {
   values = { ...current, ...result.values };
   errors = result.errors;
   if (Object.keys(errors).length === 0) {
-    saveSettings(result.values);
-    result.replaced.forEach(removeUpload);
+    await saveSettings(result.values);
+    await removeUploads(result.replaced);
     return Astro.redirect('/admin/pengaturan?ok=1', 303);
   }
 }

@@ -1,5 +1,5 @@
 import type { Field } from './resources';
-import { removeUpload, saveImage, savePdf } from './uploads';
+import { removeUploads, saveImage, savePdf } from './uploads';
 
 export type Values = Record<string, string | number>;
 
@@ -85,7 +85,7 @@ export async function parseForm(fields: Field[], form: FormData, existing: Value
   }
 
   if (Object.keys(errors).length > 0) {
-    created.forEach(removeUpload);
+    await removeUploads(created);
     created.length = 0;
     replaced.length = 0;
   }

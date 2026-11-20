@@ -2,7 +2,7 @@
 import { Image } from 'astro:assets';
 import dio from '../assets/dio.png';
 import { getSite } from '../server/content';
-const site = getSite();
+const site = await getSite();
 
 const tags = [
   { t: 'Dakwah Reflektif', bg: '#f7d84a' },

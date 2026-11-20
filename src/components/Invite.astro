@@ -1,9 +1,9 @@
 ---
 import { getPrograms, getRider, getSite } from '../server/content';
-const site = getSite();
-const rider = getRider();
+const site = await getSite();
+const rider = await getRider();
 const jenis = [
-  ...getPrograms().map((p) => ({ value: p.slug, label: p.title.replace(/^Go to /, ''), full: p.title })),
+  ...(await getPrograms()).map((p) => ({ value: p.slug, label: p.title.replace(/^Go to /, ''), full: p.title })),
   { value: 'lainnya', label: 'Lainnya', full: 'acara lainnya' },
 ];
 const field = 'mt-1 w-full rounded-md border-2 border-ink bg-white px-3 py-2.5 text-base focus:border-dio';

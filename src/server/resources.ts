@@ -89,7 +89,7 @@ export const resources: Resource[] = [
       { name: 'title', label: 'Judul', type: 'text', required: true },
       { name: 'views', label: 'Jumlah views', type: 'text', required: true, max: 20, placeholder: '533 rb' },
       { name: 'url', label: 'Link video', type: 'url', required: true, placeholder: 'https://instagram.com/reel/…' },
-      { name: 'thumbnail', label: 'Thumbnail', type: 'image', help: 'Rasio 9:16 paling pas. Dikecilkan otomatis. Kosongkan untuk pakai gradasi.' },
+      { name: 'thumbnail', label: 'Thumbnail', type: 'image', help: 'Rasio 9:16 paling pas. Maks 4 MB, dikecilkan otomatis. Kosongkan untuk pakai gradasi.' },
       { name: 'grad', label: 'Gradasi (jika tanpa thumbnail)', type: 'select', required: true, options: Object.entries(videoGradients).map(([value, g]) => ({ value, label: g.label })) },
       { name: 'quote_text', label: 'Kutipan komentar', type: 'text', max: 160 },
       { name: 'quote_author', label: 'Username pengomentar', type: 'text', max: 40, help: 'Tanpa @.' },
@@ -152,7 +152,7 @@ export const settingsGroups: SettingsGroup[] = [
       },
       { name: 'booking_open', label: 'Terima undangan', type: 'checkbox', help: 'Mati = titik status di hero jadi abu-abu.' },
       { name: 'booking_label', label: 'Teks status', type: 'text', max: 60, placeholder: 'terima undangan 2027' },
-      { name: 'proposal_pdf', label: 'Proposal (PDF)', type: 'file', help: 'Maks 10 MB. Tombol unduh hanya muncul kalau file ada.' },
+      { name: 'proposal_pdf', label: 'Proposal (PDF)', type: 'file', help: 'Maks 4 MB (batas Vercel). Tombol unduh hanya muncul kalau file ada. Kompres dulu kalau lebih besar.' },
     ],
   },
   {

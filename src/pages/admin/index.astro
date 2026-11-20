@@ -3,7 +3,8 @@ import AdminLayout from '../../layouts/AdminLayout.astro';
 import { countRows, getSettings } from '../../server/db';
 import { resources } from '../../server/resources';
 
-const s = getSettings();
+const s = await getSettings();
+const counts = await Promise.all(resources.map(countRows));
 const warnings = [
   s.whatsapp === '6281234567890' && 'Nomor WhatsApp masih dummy. Undangan dari website belum sampai ke tim.',
   !s.proposal_pdf && 'Proposal PDF belum diunggah, tombol unduh di website disembunyikan.',
@@ -24,9 +25,9 @@ const warnings = [
 
   <div class="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
     {
-      resources.map((r) => (
+      resources.map((r, i) => (
         <a href={`/admin/${r.key}`} class="group rounded-xl border border-ink/15 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">
-          <p class="pixel text-4xl text-dio">{countRows(r)}</p>
+          <p class="pixel text-4xl text-dio">{counts[i]}</p>
           <p class="mt-1 font-extrabold">{r.title}</p>
           <p class="mt-1 text-xs text-ink/55">{r.description}</p>
         </a>

@@ -4,14 +4,14 @@ import FieldInput from '../../../components/admin/FieldInput.astro';
 import { createRow, getRow, updateRow } from '../../../server/db';
 import { parseForm, type Values } from '../../../server/forms';
 import { resourceByKey } from '../../../server/resources';
-import { removeUpload } from '../../../server/uploads';
+import { removeUploads } from '../../../server/uploads';
 
 const res = resourceByKey(Astro.params.resource);
 if (!res) return new Response('Not found', { status: 404 });
 
 const isNew = Astro.params.id === 'baru';
 const id = Number(Astro.params.id);
-const existing = isNew ? null : getRow(res, id);
+const existing = isNew ? null : await getRow(res, id);
 if (!isNew && !existing) return new Response('Not found', { status: 404 });
 
 let values: Values = existing ?? { published: 1, theme: 'ink', grad: 'violet', cat: 'sekolah', tint: '#ffe8a3' };
@@ -26,13 +26,13 @@ if (Astro.request.method === 'POST') {
 
   if (Object.keys(errors).length === 0) {
     try {
-      if (isNew) createRow(res, result.values);
-      else updateRow(res, id, result.values);
-      result.replaced.forEach(removeUpload);
+      if (isNew) await createRow(res, result.values);
+      else await updateRow(res, id, result.values);
+      await removeUploads(result.replaced);
       return Astro.redirect(`/admin/${res.key}?ok=${isNew ? 'created' : 'updated'}`, 303);
     } catch (e) {
       // Pelanggaran UNIQUE (mis. slug kembar): batalkan file yang baru diunggah dan tampilkan pesan.
-      result.created.forEach(removeUpload);
+      await removeUploads(result.created);
       const unique = res.fields.find((f) => f.unique);
       if (unique && e instanceof Error && /UNIQUE/i.test(e.message)) errors[unique.name] = 'Nilai ini sudah dipakai.';
       else throw e;

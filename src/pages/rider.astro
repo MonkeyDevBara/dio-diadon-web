@@ -1,8 +1,8 @@
 ---
 import Layout from '../layouts/Layout.astro';
 import { getRider, getSite } from '../server/content';
-const rider = getRider();
-const site = getSite();
+const rider = await getRider();
+const site = await getSite();
 
 const sections = [
   { t: 'Tim & transportasi', items: [rider.team] },

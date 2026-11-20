@@ -1,13 +1,14 @@
 import type { APIRoute } from 'astro';
-import { backupBuffer } from '../../server/db';
+import { exportAll } from '../../server/db';
 
-// Salinan konsisten database (VACUUM INTO). Foto/PDF yang diunggah ada di folder data/uploads dan perlu disalin terpisah.
-export const GET: APIRoute = () => {
+// Ekspor seluruh konten dan file unggahan (base64) sebagai JSON.
+// Turso juga menyimpan backup/point-in-time sendiri; ini salinan tambahan yang bisa kamu simpan.
+export const GET: APIRoute = async () => {
   const stamp = new Date().toISOString().slice(0, 10);
-  return new Response(backupBuffer(), {
+  return new Response(JSON.stringify(await exportAll()), {
     headers: {
-      'Content-Type': 'application/octet-stream',
-      'Content-Disposition': `attachment; filename="dio-backup-${stamp}.db"`,
+      'Content-Type': 'application/json',
+      'Content-Disposition': `attachment; filename="dio-backup-${stamp}.json"`,
     },
   });
 };

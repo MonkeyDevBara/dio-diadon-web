@@ -2,22 +2,22 @@
 import '../../styles/global.css';
 import { COOKIE, SESSION_SECONDS, adminEnabled, checkPassword, createSession, loginBlockedFor, recordLogin, verifySession } from '../../server/auth';
 
-if (verifySession(Astro.cookies.get(COOKIE)?.value)) return Astro.redirect('/admin');
+if (await verifySession(Astro.cookies.get(COOKIE)?.value)) return Astro.redirect('/admin');
 
 const enabled = adminEnabled();
 let error = '';
 
 if (Astro.request.method === 'POST' && enabled) {
   const ip = Astro.clientAddress;
-  const wait = loginBlockedFor(ip);
+  const wait = await loginBlockedFor(ip);
   if (wait) {
     error = `Terlalu banyak percobaan. Coba lagi dalam ${wait} menit.`;
   } else {
     const form = await Astro.request.formData();
     const ok = checkPassword(String(form.get('password') ?? ''));
-    recordLogin(ip, ok);
+    await recordLogin(ip, ok);
     if (ok) {
-      Astro.cookies.set(COOKIE, createSession(), {
+      Astro.cookies.set(COOKIE, await createSession(), {
         httpOnly: true,
         sameSite: 'strict',
         secure: Astro.url.protocol === 'https:',

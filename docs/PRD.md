@@ -68,7 +68,7 @@ Gaya visual mengadaptasi referensi: kertas bergaris, sticky note, washi tape, po
 ## 5. Non-goals
 
 - Bukan platform streaming atau toko (tidak ada checkout, membership, atau donasi online di versi ini).
-- Tidak ada CMS pihak ketiga (Supabase, dll). Konten disimpan di database SQLite tertanam dan diubah lewat `/admin` (lihat §12.1).
+- Tidak ada Supabase atau CMS pihak ketiga. Konten disimpan di database libSQL/SQLite dan diubah lewat `/admin` (lihat §12.1).
 - Tidak menggantikan Instagram sebagai kanal konten harian. Website hanya merangkum dan mengarahkan ke sana.
 - Tidak ada sistem kalender booking otomatis. Booking tetap lewat WhatsApp tim Starday.
 
@@ -228,17 +228,17 @@ Hanya entri `jejak` dengan `verified: true` yang ditampilkan.
 
 ## 12. Rekomendasi Teknis (keputusan builder, bisa dioverride)
 
-- **Astro (SSR, adapter Node) + Tailwind CSS**: halaman publik membaca konten dari SQLite tertanam, JS di browser hanya untuk nav aktif, form WA, dan animasi kecil. Skema konten di §10 diwujudkan sebagai tabel SQLite.
+- **Astro (SSR, adapter Vercel) + Tailwind CSS**: halaman publik membaca konten dari database libSQL (satu query batch, cache 15 detik per instance, dibuang otomatis saat admin menyimpan). JS di browser hanya untuk nav aktif, form WA, dan animasi kecil. Skema konten di §10 diwujudkan sebagai tabel SQLite.
 - Font di-host sendiri via `@fontsource/*`.
-- Deploy ke **server Node dengan disk persisten** (VPS, Railway/Fly/Render dengan volume), karena database berupa file `data/dio.db`. Vercel/Cloudflare Pages tidak cocok untuk SQLite berbasis file. Domain usulan: `diodiadon.com` atau `diodiadon.id` (cek ketersediaan).
+- Deploy di **Vercel (Hobby, gratis, hanya non-komersial)** dengan database **Turso (gratis: 5 GB, 500 juta baca baris/bulan)**. Lokal memakai file `data/dio.db` tanpa konfigurasi. Langkah deploy: `docs/DEPLOY.md`. Domain usulan: `diodiadon.com` atau `diodiadon.id` (cek ketersediaan).
 - Analitik event: `click_undang_nav`, `click_undang_hero`, `submit_undang_wa` (properti: jenis acara, kota), `download_proposal`, `click_social` (properti: platform), `click_video`.
 
 ### 12.1 Admin (`/admin`)
 
 - Login satu password dari env `ADMIN_PASSWORD` (min. 8 karakter); sesi cookie bertanda tangan 7 hari; 5 gagal login per IP mengunci 10 menit. Admin nonaktif jika env kosong.
 - Kelola: Pengaturan (WhatsApp, status booking, sosial media, rider, teks bio, foto, proposal PDF), Program, Angka dampak, Jejak, Video (dengan upload thumbnail), Testimoni, Isu Gen Z. Tiap item bisa diurutkan, disembunyikan, diedit, dan dihapus.
-- Upload gambar dire-encode ke WebP (metadata EXIF dihapus, SVG ditolak); PDF divalidasi header. File disimpan di `data/uploads`.
-- Backup: tombol "Unduh backup DB" menyalin database; folder `data/uploads` disalin terpisah.
+- Upload gambar dire-encode ke WebP (metadata EXIF dihapus, SVG ditolak); PDF divalidasi header. Maks 4 MB per file (batas body request Vercel 4,5 MB). File disimpan sebagai BLOB di tabel `uploads` pada database yang sama, jadi tidak perlu layanan penyimpanan lain.
+- Backup: tombol "Unduh backup (JSON)" mengekspor semua konten dan file unggahan. Turso juga menyediakan backup/point-in-time sendiri.
 - Database diisi data dummy dari `src/data/seed.ts` saat pertama kali jalan. Setelah itu seed tidak dibaca lagi.
 
 ## 13. Aset yang Dibutuhkan dari Dio / Tim

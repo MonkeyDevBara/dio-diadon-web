@@ -2,7 +2,7 @@
 import AdminLayout from '../../../layouts/AdminLayout.astro';
 import { deleteRow, getRow, listRows, moveRow, setPublished } from '../../../server/db';
 import { resourceByKey } from '../../../server/resources';
-import { removeUpload, uploadUrl } from '../../../server/uploads';
+import { removeUploads, uploadUrl } from '../../../server/uploads';
 
 const res = resourceByKey(Astro.params.resource);
 if (!res) return new Response('Not found', { status: 404 });
@@ -12,20 +12,20 @@ if (Astro.request.method === 'POST') {
   const id = Number(form.get('id'));
   const action = String(form.get('action') ?? '');
   if (Number.isInteger(id)) {
-    if (action === 'up' || action === 'down') moveRow(res, id, action);
-    if (action === 'show' || action === 'hide') setPublished(res, id, action === 'show');
+    if (action === 'up' || action === 'down') await moveRow(res, id, action);
+    if (action === 'show' || action === 'hide') await setPublished(res, id, action === 'show');
     if (action === 'delete') {
-      const row = getRow(res, id);
+      const row = await getRow(res, id);
       if (row) {
-        res.fields.filter((f) => f.type === 'image' || f.type === 'file').forEach((f) => removeUpload(String(row[f.name])));
-        deleteRow(res, id);
+        await removeUploads(res.fields.filter((f) => f.type === 'image' || f.type === 'file').map((f) => String(row[f.name])));
+        await deleteRow(res, id);
       }
     }
   }
   return Astro.redirect(`/admin/${res.key}`, 303);
 }
 
-const rows = listRows(res);
+const rows = await listRows(res);
 const cols = res.columns.map((n) => res.fields.find((f) => f.name === n)!);
 const saved = Astro.url.searchParams.get('ok');
 const cell = (v: string | number) => {

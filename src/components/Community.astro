@@ -1,6 +1,6 @@
 ---
 import { getSite } from '../server/content';
-const site = getSite();
+const site = await getSite();
 const { socials } = site;
 const links = [
   { href: socials.instagram, label: 'Instagram', handle: '@diodiadon' },
