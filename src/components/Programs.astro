@@ -1,5 +1,6 @@
 ---
-import { programs } from '../data/site';
+import { getPrograms } from '../server/content';
+const programs = getPrograms();
 
 const theme = {
   ink: { card: 'bg-ink text-white', tab: 'bg-navy text-white', chip: 'bg-white/15 text-white' },

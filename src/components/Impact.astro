@@ -1,5 +1,6 @@
 ---
-import { stats } from '../data/site';
+import { getStats } from '../server/content';
+const stats = getStats();
 const fmt = (n: number) => String(n).replace('.', ',');
 ---
 

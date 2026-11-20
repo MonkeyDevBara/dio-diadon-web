@@ -1,5 +1,6 @@
 ---
-import { site } from '../data/site';
+import { getSite } from '../server/content';
+const site = getSite();
 const { socials } = site;
 const links = [
   { href: socials.instagram, label: 'Instagram', handle: '@diodiadon' },

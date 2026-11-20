@@ -1,0 +1,54 @@
+---
+import '../styles/global.css';
+import { resources } from '../server/resources';
+
+interface Props {
+  title: string;
+  active?: string;
+}
+const { title, active = '' } = Astro.props;
+
+const link = (href: string, key: string) =>
+  `flex items-center gap-2 rounded-md px-3 py-2 text-sm font-semibold transition-colors hover:bg-white/10 ${active === key ? 'bg-sun text-ink hover:bg-sun' : 'text-white/85'}`;
+---
+
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex, nofollow" />
+    <title>{title} · Admin Dio Diadon</title>
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <style is:global>body::before{display:none}</style>
+  </head>
+  <body class="!bg-[#f4f2ec] !bg-none">
+    <div class="min-h-screen lg:grid lg:grid-cols-[15rem_1fr]">
+      <aside class="bg-ink p-4 text-white lg:sticky lg:top-0 lg:h-screen lg:overflow-y-auto">
+        <a href="/admin" class="mb-4 flex items-center gap-2 px-2">
+          <span class="grid h-9 w-9 place-items-center rounded-lg bg-dio pixel text-lg text-ink">D</span>
+          <span><span class="block text-sm font-extrabold leading-none">Admin</span><span class="mono text-[0.6rem] text-white/50">dio diadon</span></span>
+        </a>
+        <nav class="flex gap-1 overflow-x-auto lg:flex-col lg:overflow-visible" aria-label="Menu admin">
+          <a href="/admin" class={link('/admin', 'dashboard')}>🏠 Dashboard</a>
+          <a href="/admin/pengaturan" class={link('/admin/pengaturan', 'pengaturan')}>⚙️ Pengaturan</a>
+          <p class="mono mt-3 hidden px-3 text-[0.6rem] text-white/40 lg:block">KONTEN</p>
+          {resources.map((r) => <a href={`/admin/${r.key}`} class={link(`/admin/${r.key}`, r.key)}>{r.title}</a>)}
+        </nav>
+        <div class="mt-4 space-y-1 border-t border-white/10 pt-4 text-sm lg:mt-6">
+          <a href="/" target="_blank" rel="noopener" class="block rounded-md px-3 py-2 text-white/85 hover:bg-white/10">↗ Lihat website</a>
+          <a href="/admin/backup" class="block rounded-md px-3 py-2 text-white/85 hover:bg-white/10">⬇ Unduh backup DB</a>
+          <form method="post" action="/admin/logout">
+            <button class="w-full rounded-md px-3 py-2 text-left text-white/85 hover:bg-white/10" type="submit">⎋ Keluar</button>
+          </form>
+        </div>
+      </aside>
+
+      <main class="min-w-0 p-5 sm:p-8">
+        <div class="mx-auto max-w-4xl">
+          <slot />
+        </div>
+      </main>
+    </div>
+  </body>
+</html>

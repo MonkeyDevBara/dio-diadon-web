@@ -1,0 +1,79 @@
+---
+import type { Field } from '../../server/resources';
+import { uploadUrl } from '../../server/uploads';
+
+interface Props {
+  field: Field;
+  value?: string | number;
+  error?: string;
+}
+const { field: f, value = '', error } = Astro.props;
+const v = String(value ?? '');
+
+const input =
+  'mt-1 w-full rounded-md border border-ink/25 bg-white px-3 py-2 text-[0.95rem] focus:border-dio focus:outline-none focus:ring-2 focus:ring-dio/30';
+const id = `f-${f.name}`;
+---
+
+<div class="space-y-1">
+  {
+    f.type === 'checkbox' ? (
+      <label class="flex items-center gap-2 text-sm font-bold">
+        <input type="checkbox" name={f.name} checked={v === '1'} class="h-4 w-4 accent-[#ee6a1f]" />
+        {f.label}
+      </label>
+    ) : (
+      <label for={id} class="text-sm font-bold">
+        {f.label}
+        {f.required && <span class="text-dio" aria-hidden="true"> *</span>}
+      </label>
+    )
+  }
+
+  {f.type === 'textarea' && <textarea id={id} name={f.name} rows="4" maxlength={f.max ?? 1000} required={f.required} class={input}>{v}</textarea>}
+
+  {
+    f.type === 'select' && (
+      <select id={id} name={f.name} required={f.required} class={input}>
+        {f.options?.map((o) => <option value={o.value} selected={o.value === v}>{o.label}</option>)}
+      </select>
+    )
+  }
+
+  {f.type === 'color' && <input id={id} type="color" name={f.name} value={/^#[0-9a-f]{6}$/i.test(v) ? v : '#ffe8a3'} class="mt-1 block h-10 w-24 cursor-pointer rounded border border-ink/25 bg-white p-1" />}
+
+  {
+    (f.type === 'image' || f.type === 'file') && (
+      <div class="mt-1 space-y-2">
+        {v && f.type === 'image' && <img src={uploadUrl(v)} alt="" class="h-32 rounded border border-ink/15 object-cover" />}
+        {v && f.type === 'file' && <a href={uploadUrl(v)} target="_blank" rel="noopener" class="text-sm font-semibold underline">Lihat file saat ini ↗</a>}
+        <input id={id} type="file" name={f.name} accept={f.type === 'image' ? 'image/jpeg,image/png,image/webp,image/avif,image/gif' : 'application/pdf'} class="block w-full text-sm file:mr-3 file:rounded-md file:border-0 file:bg-ink file:px-3 file:py-2 file:text-sm file:font-bold file:text-white" />
+        {v && (
+          <label class="flex items-center gap-2 text-sm text-ink/70">
+            <input type="checkbox" name={`remove_${f.name}`} class="accent-[#ee6a1f]" /> Hapus file saat ini
+          </label>
+        )}
+      </div>
+    )
+  }
+
+  {
+    ['text', 'url', 'tags', 'number'].includes(f.type) && (
+      <input
+        id={id}
+        name={f.name}
+        type={f.type === 'url' ? 'url' : 'text'}
+        inputmode={f.type === 'number' ? 'decimal' : undefined}
+        value={v}
+        required={f.required}
+        maxlength={f.max}
+        placeholder={f.placeholder}
+        class={input}
+        autocomplete="off"
+      />
+    )
+  }
+
+  {f.help && !error && <p class="text-xs text-ink/55">{f.help}</p>}
+  {error && <p class="text-sm font-semibold text-[#c22]" role="alert">{error}</p>}
+</div>

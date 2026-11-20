@@ -1,0 +1,41 @@
+---
+import AdminLayout from '../../layouts/AdminLayout.astro';
+import { countRows, getSettings } from '../../server/db';
+import { resources } from '../../server/resources';
+
+const s = getSettings();
+const warnings = [
+  s.whatsapp === '6281234567890' && 'Nomor WhatsApp masih dummy. Undangan dari website belum sampai ke tim.',
+  !s.proposal_pdf && 'Proposal PDF belum diunggah, tombol unduh di website disembunyikan.',
+].filter(Boolean) as string[];
+---
+
+<AdminLayout title="Dashboard" active="dashboard">
+  <h1 class="text-3xl font-extrabold">Halo, Dio 👋</h1>
+  <p class="mt-1 text-ink/60">Ubah isi website di sini. Perubahan langsung tampil di halaman publik.</p>
+
+  {
+    warnings.length > 0 && (
+      <ul class="mt-6 space-y-2" aria-label="Perlu perhatian">
+        {warnings.map((w) => <li class="rounded-md border border-dio/40 bg-dio/10 px-4 py-3 text-sm font-semibold">⚠️ {w} <a href="/admin/pengaturan" class="underline">Atur</a></li>)}
+      </ul>
+    )
+  }
+
+  <div class="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+    {
+      resources.map((r) => (
+        <a href={`/admin/${r.key}`} class="group rounded-xl border border-ink/15 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">
+          <p class="pixel text-4xl text-dio">{countRows(r)}</p>
+          <p class="mt-1 font-extrabold">{r.title}</p>
+          <p class="mt-1 text-xs text-ink/55">{r.description}</p>
+        </a>
+      ))
+    }
+    <a href="/admin/pengaturan" class="rounded-xl border border-ink/15 bg-sun p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">
+      <p class="pixel text-4xl">⚙️</p>
+      <p class="mt-1 font-extrabold">Pengaturan</p>
+      <p class="mt-1 text-xs text-ink/65">WhatsApp, sosial media, rider, proposal, status booking.</p>
+    </a>
+  </div>
+</AdminLayout>

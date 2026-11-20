@@ -1,6 +1,8 @@
 ---
 import { Image } from 'astro:assets';
 import dio from '../assets/dio.png';
+import { getSite } from '../server/content';
+const site = getSite();
 
 const tags = [
   { t: 'Dakwah Reflektif', bg: '#f7d84a' },
@@ -22,20 +24,20 @@ const tags = [
     </figure>
 
     <div class="order-first text-center md:order-2">
-      <p class="hand text-[1.6rem] leading-snug sm:text-[1.9rem]">
-        Aku Dio, anak muda yang percaya kalau ngaji itu bisa asik. Sehari-hari jadi marbot masjid, malamnya megang gitar.
-        Aku peduli sama hal-hal yang sering dibahas pelan-pelan di kamar: cinta, keluarga, duit, circle, dan capeknya kepala.
-        Starday lahir dari situ, ngobrol jujur, nyanyi bareng, lalu pulang dengan hati yang lebih ringan. 🎶
-      </p>
+      <p class="hand text-[1.6rem] leading-snug sm:text-[1.9rem]">{site.aboutText}</p>
       <ul class="mt-6 flex flex-wrap items-center justify-center gap-2" aria-label="Peran">
         {tags.map((t) => <li class="torn" style={`--bg:${t.bg};color:${t.fg ?? '#151515'}`}>{t.t}</li>)}
       </ul>
     </div>
 
     <figure class="polaroid tape tilt mx-auto w-44 sm:w-52 md:order-3" style="--r:3deg;--tape:rgb(247 216 74 / .8)">
-      <div class="ph aspect-[4/5]" role="img" aria-label="Placeholder foto manggung">
-        <span>📷<br />foto manggung<br />(dummy)</span>
-      </div>
+      {site.aboutPhoto ? (
+        <img src={site.aboutPhoto} alt="Dio Diadon saat mengisi acara" loading="lazy" width="320" height="400" class="aspect-[4/5] w-full object-cover" />
+      ) : (
+        <div class="ph aspect-[4/5]" role="img" aria-label="Placeholder foto manggung">
+          <span>📷<br />foto manggung<br />(dummy)</span>
+        </div>
+      )}
       <figcaption>lagi ngisi acara</figcaption>
     </figure>
   </div>

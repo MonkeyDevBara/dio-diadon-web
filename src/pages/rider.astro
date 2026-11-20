@@ -1,6 +1,8 @@
 ---
 import Layout from '../layouts/Layout.astro';
-import { rider, site } from '../data/site';
+import { getRider, getSite } from '../server/content';
+const rider = getRider();
+const site = getSite();
 
 const sections = [
   { t: 'Tim & transportasi', items: [rider.team] },

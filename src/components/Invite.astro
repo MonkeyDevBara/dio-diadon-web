@@ -1,12 +1,10 @@
 ---
-import { site, rider } from '../data/site';
-
+import { getPrograms, getRider, getSite } from '../server/content';
+const site = getSite();
+const rider = getRider();
 const jenis = [
-  ['school', 'Sekolah'],
-  ['kampus', 'Kampus'],
-  ['komunitas', 'Komunitas'],
-  ['masjid', 'Masjid'],
-  ['lainnya', 'Lainnya'],
+  ...getPrograms().map((p) => ({ value: p.slug, label: p.title.replace(/^Go to /, ''), full: p.title })),
+  { value: 'lainnya', label: 'Lainnya', full: 'acara lainnya' },
 ];
 const field = 'mt-1 w-full rounded-md border-2 border-ink bg-white px-3 py-2.5 text-base focus:border-dio';
 const label = 'mono block text-[0.7rem]';
@@ -33,7 +31,7 @@ const label = 'mono block text-[0.7rem]';
       <div class="grid gap-4 sm:grid-cols-2">
         <label class={label}>Jenis acara
           <select class={field} name="jenis" id="f-jenis" required>
-            {jenis.map(([v, l]) => <option value={v}>{l}</option>)}
+            {jenis.map((j) => <option value={j.value} data-label={j.full}>{j.label}</option>)}
           </select>
         </label>
         <label class={label}>Kota
@@ -69,7 +67,7 @@ const label = 'mono block text-[0.7rem]';
         </ul>
         <div class="mt-5 flex flex-wrap gap-3">
           <a href="/rider" class="btn btn-ghost !px-4 !py-2.5 !text-[0.7rem]">Rider lengkap</a>
-          <a href={site.proposalPdf} download data-download class="btn !px-4 !py-2.5 !text-[0.7rem]">⬇ Proposal PDF</a>
+          {site.proposalPdf && <a href={site.proposalPdf} target="_blank" rel="noopener" data-download class="btn !px-4 !py-2.5 !text-[0.7rem]">⬇ Proposal PDF</a>}
         </div>
       </div>
     </aside>
@@ -81,13 +79,8 @@ const label = 'mono block text-[0.7rem]';
   const form = document.querySelector<HTMLFormElement>('#invite')!;
   const err = document.querySelector<HTMLElement>('#f-error')!;
   const date = form.elements.namedItem('tanggal') as HTMLInputElement;
-  const jenisLabel: Record<string, string> = {
-    school: 'Go to School',
-    kampus: 'Go to Kampus',
-    komunitas: 'Go to Komunitas',
-    masjid: 'Go to Masjid',
-    lainnya: 'acara lainnya',
-  };
+  const jenisSel = form.elements.namedItem('jenis') as HTMLSelectElement;
+  const jenisLabel = () => jenisSel.selectedOptions[0]?.dataset.label ?? jenisSel.value;
 
   const today = new Date();
   date.min = new Date(today.getTime() - today.getTimezoneOffset() * 60000).toISOString().slice(0, 10);
@@ -117,7 +110,7 @@ const label = 'mono block text-[0.7rem]';
     const text = [
       "Assalamu'alaikum Kak Dio, perkenalkan saya " + val('nama') + ' dari ' + val('instansi') + '.',
       '',
-      'Kami ingin mengundang ' + jenisLabel[val('jenis')] + ':',
+      'Kami ingin mengundang ' + jenisLabel() + ':',
       '• Kota: ' + val('kota'),
       '• Tanggal: ' + tgl,
       '• Perkiraan peserta: ' + val('peserta') + ' orang',

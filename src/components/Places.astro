@@ -1,5 +1,7 @@
 ---
-import { places, placeFilters } from '../data/site';
+import { placeFilters } from '../data/static';
+import { getPlaces } from '../server/content';
+const places = getPlaces();
 const bg: Record<string, string> = {
   sekolah: '#f7d84a',
   kampus: '#9ad9b4',

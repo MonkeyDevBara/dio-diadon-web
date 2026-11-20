@@ -1,0 +1,47 @@
+---
+import AdminLayout from '../../layouts/AdminLayout.astro';
+import FieldInput from '../../components/admin/FieldInput.astro';
+import { getSettings, saveSettings } from '../../server/db';
+import { parseForm, type Values } from '../../server/forms';
+import { settingsFields, settingsGroups } from '../../server/resources';
+import { removeUpload } from '../../server/uploads';
+
+const current = getSettings();
+let values: Values = { ...current };
+let errors: Record<string, string> = {};
+
+if (Astro.request.method === 'POST') {
+  const form = await Astro.request.formData();
+  const result = await parseForm(settingsFields, form, current);
+  values = { ...current, ...result.values };
+  errors = result.errors;
+  if (Object.keys(errors).length === 0) {
+    saveSettings(result.values);
+    result.replaced.forEach(removeUpload);
+    return Astro.redirect('/admin/pengaturan?ok=1', 303);
+  }
+}
+const saved = Astro.url.searchParams.get('ok') === '1';
+---
+
+<AdminLayout title="Pengaturan" active="pengaturan">
+  <h1 class="text-3xl font-extrabold">Pengaturan</h1>
+
+  {saved && <p class="mt-4 rounded-md bg-mint/25 px-4 py-3 text-sm font-bold" role="status">✅ Tersimpan.</p>}
+  {Object.keys(errors).length > 0 && <p class="mt-4 rounded-md bg-[#c22]/10 px-4 py-3 text-sm font-bold text-[#c22]" role="alert">Ada isian yang perlu diperbaiki, lihat tanda merah di bawah.</p>}
+
+  <form method="post" enctype="multipart/form-data" class="mt-6 space-y-6">
+    {
+      settingsGroups.map((g) => (
+        <fieldset class="space-y-4 rounded-xl border border-ink/15 bg-white p-5 shadow-sm">
+          <legend class="px-2 text-lg font-extrabold">{g.title}</legend>
+          {g.description && <p class="-mt-2 text-sm text-ink/60">{g.description}</p>}
+          {g.fields.map((f) => <FieldInput field={f} value={values[f.name]} error={errors[f.name]} />)}
+        </fieldset>
+      ))
+    }
+    <div class="sticky bottom-3 flex justify-end">
+      <button type="submit" class="btn">Simpan pengaturan</button>
+    </div>
+  </form>
+</AdminLayout>

@@ -1,0 +1,63 @@
+---
+import AdminLayout from '../../../layouts/AdminLayout.astro';
+import FieldInput from '../../../components/admin/FieldInput.astro';
+import { createRow, getRow, updateRow } from '../../../server/db';
+import { parseForm, type Values } from '../../../server/forms';
+import { resourceByKey } from '../../../server/resources';
+import { removeUpload } from '../../../server/uploads';
+
+const res = resourceByKey(Astro.params.resource);
+if (!res) return new Response('Not found', { status: 404 });
+
+const isNew = Astro.params.id === 'baru';
+const id = Number(Astro.params.id);
+const existing = isNew ? null : getRow(res, id);
+if (!isNew && !existing) return new Response('Not found', { status: 404 });
+
+let values: Values = existing ?? { published: 1, theme: 'ink', grad: 'violet', cat: 'sekolah', tint: '#ffe8a3' };
+let errors: Record<string, string> = {};
+
+if (Astro.request.method === 'POST') {
+  const form = await Astro.request.formData();
+  const result = await parseForm(res.fields, form, existing ?? {});
+  result.values.published = form.get('published') === 'on' ? 1 : 0;
+  values = { ...values, ...result.values };
+  errors = result.errors;
+
+  if (Object.keys(errors).length === 0) {
+    try {
+      if (isNew) createRow(res, result.values);
+      else updateRow(res, id, result.values);
+      result.replaced.forEach(removeUpload);
+      return Astro.redirect(`/admin/${res.key}?ok=${isNew ? 'created' : 'updated'}`, 303);
+    } catch (e) {
+      // Pelanggaran UNIQUE (mis. slug kembar): batalkan file yang baru diunggah dan tampilkan pesan.
+      result.created.forEach(removeUpload);
+      const unique = res.fields.find((f) => f.unique);
+      if (unique && e instanceof Error && /UNIQUE/i.test(e.message)) errors[unique.name] = 'Nilai ini sudah dipakai.';
+      else throw e;
+    }
+  }
+}
+---
+
+<AdminLayout title={isNew ? `Tambah ${res.singular}` : `Edit ${res.singular}`} active={res.key}>
+  <a href={`/admin/${res.key}`} class="mono text-xs underline">← {res.title}</a>
+  <h1 class="mt-2 text-3xl font-extrabold">{isNew ? `Tambah ${res.singular}` : `Edit ${res.singular}`}</h1>
+
+  {Object.keys(errors).length > 0 && <p class="mt-4 rounded-md bg-[#c22]/10 px-4 py-3 text-sm font-bold text-[#c22]" role="alert">Ada isian yang perlu diperbaiki, lihat tanda merah di bawah.</p>}
+
+  <form method="post" enctype="multipart/form-data" class="mt-6 space-y-5 rounded-xl border border-ink/15 bg-white p-5 shadow-sm sm:p-6">
+    {res.fields.map((f) => <FieldInput field={f} value={values[f.name]} error={errors[f.name]} />)}
+
+    <label class="flex items-center gap-2 border-t border-ink/10 pt-4 text-sm font-bold">
+      <input type="checkbox" name="published" checked={Number(values.published) === 1} class="h-4 w-4 accent-[#ee6a1f]" />
+      Tampilkan di website
+    </label>
+
+    <div class="flex gap-3">
+      <button type="submit" class="btn !px-5 !py-2.5">Simpan</button>
+      <a href={`/admin/${res.key}`} class="btn btn-ghost !px-5 !py-2.5">Batal</a>
+    </div>
+  </form>
+</AdminLayout>

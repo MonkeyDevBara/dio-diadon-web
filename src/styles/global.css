@@ -29,27 +29,24 @@ html {
 }
 
 body {
+  position: relative;
   background-color: var(--color-paper);
-  background-image: repeating-linear-gradient(
-    to bottom,
-    transparent 0 31px,
-    var(--color-line) 31px 32px
-  );
+  /* satu tile 32px yang diulang, jauh lebih murah daripada gradient setinggi halaman */
+  background-image: linear-gradient(to bottom, transparent 31px, var(--color-line) 31px);
+  background-size: 100% 32px;
   color: var(--color-ink);
   font-family: var(--font-sans);
-  overflow-x: hidden;
+  overflow-x: clip;
 }
 
 @media (min-width: 768px) {
-  body {
-    background-image:
-      linear-gradient(
-        to right,
-        transparent 56px,
-        rgb(238 106 31 / 0.35) 56px 58px,
-        transparent 58px
-      ),
-      repeating-linear-gradient(to bottom, transparent 0 31px, var(--color-line) 31px 32px);
+  body::before {
+    content: '';
+    position: absolute;
+    inset: 0 auto 0 56px;
+    width: 2px;
+    background: rgb(238 106 31 / 0.35);
+    pointer-events: none;
   }
 }
 

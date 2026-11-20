@@ -1,6 +1,7 @@
 ---
 import '../styles/global.css';
-import { site } from '../data/site';
+import { getSite } from '../server/content';
+const site = getSite();
 
 interface Props {
   title?: string;

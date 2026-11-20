@@ -1,0 +1,106 @@
+---
+import AdminLayout from '../../../layouts/AdminLayout.astro';
+import { deleteRow, getRow, listRows, moveRow, setPublished } from '../../../server/db';
+import { resourceByKey } from '../../../server/resources';
+import { removeUpload, uploadUrl } from '../../../server/uploads';
+
+const res = resourceByKey(Astro.params.resource);
+if (!res) return new Response('Not found', { status: 404 });
+
+if (Astro.request.method === 'POST') {
+  const form = await Astro.request.formData();
+  const id = Number(form.get('id'));
+  const action = String(form.get('action') ?? '');
+  if (Number.isInteger(id)) {
+    if (action === 'up' || action === 'down') moveRow(res, id, action);
+    if (action === 'show' || action === 'hide') setPublished(res, id, action === 'show');
+    if (action === 'delete') {
+      const row = getRow(res, id);
+      if (row) {
+        res.fields.filter((f) => f.type === 'image' || f.type === 'file').forEach((f) => removeUpload(String(row[f.name])));
+        deleteRow(res, id);
+      }
+    }
+  }
+  return Astro.redirect(`/admin/${res.key}`, 303);
+}
+
+const rows = listRows(res);
+const cols = res.columns.map((n) => res.fields.find((f) => f.name === n)!);
+const saved = Astro.url.searchParams.get('ok');
+const cell = (v: string | number) => {
+  const s = String(v);
+  return s.length > 60 ? s.slice(0, 60) + '…' : s;
+};
+---
+
+<AdminLayout title={res.title} active={res.key}>
+  <div class="flex flex-wrap items-end justify-between gap-3">
+    <div>
+      <h1 class="text-3xl font-extrabold">{res.title}</h1>
+      <p class="mt-1 max-w-xl text-sm text-ink/60">{res.description}</p>
+    </div>
+    <a href={`/admin/${res.key}/baru`} class="btn !px-4 !py-2.5">+ Tambah {res.singular}</a>
+  </div>
+
+  {saved === 'created' && <p class="mt-4 rounded-md bg-mint/25 px-4 py-3 text-sm font-bold" role="status">✅ {res.singular} ditambahkan.</p>}
+  {saved === 'updated' && <p class="mt-4 rounded-md bg-mint/25 px-4 py-3 text-sm font-bold" role="status">✅ Perubahan tersimpan.</p>}
+
+  {
+    rows.length === 0 ? (
+      <p class="mt-8 rounded-xl border border-dashed border-ink/30 p-10 text-center text-ink/60">Belum ada data. Klik "Tambah {res.singular}".</p>
+    ) : (
+      <div class="mt-6 overflow-x-auto rounded-xl border border-ink/15 bg-white shadow-sm">
+        <table class="w-full text-left text-sm">
+          <thead class="bg-ink/5 text-xs uppercase tracking-wide text-ink/60">
+            <tr>
+              <th class="w-10 px-3 py-2">#</th>
+              {cols.map((c) => <th class="px-3 py-2">{c.label}</th>)}
+              <th class="px-3 py-2">Status</th>
+              <th class="px-3 py-2 text-right">Aksi</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-ink/10">
+            {rows.map((r, i) => (
+              <tr class:list={[!r.published && 'opacity-50']}>
+                <td class="px-3 py-2 text-ink/50">{i + 1}</td>
+                {cols.map((c) => (
+                  <td class="max-w-[16rem] px-3 py-2">
+                    {c.type === 'color' ? (
+                      <span class="inline-block h-5 w-8 rounded border border-ink/20" style={`background:${r[c.name]}`} />
+                    ) : c.type === 'image' ? (
+                      r[c.name] ? <img src={uploadUrl(String(r[c.name]))} alt="" class="h-10 rounded" /> : '—'
+                    ) : (
+                      cell(r[c.name])
+                    )}
+                  </td>
+                ))}
+                <td class="px-3 py-2">
+                  <span class:list={['rounded px-2 py-0.5 text-xs font-bold', r.published ? 'bg-mint/30' : 'bg-ink/10']}>{r.published ? 'Tampil' : 'Disembunyikan'}</span>
+                </td>
+                <td class="px-3 py-2">
+                  <form method="post" class="flex items-center justify-end gap-1">
+                    <input type="hidden" name="id" value={r.id} />
+                    <button name="action" value="up" disabled={i === 0} class="rounded px-2 py-1 hover:bg-ink/10 disabled:opacity-25" aria-label="Naikkan" title="Naikkan">↑</button>
+                    <button name="action" value="down" disabled={i === rows.length - 1} class="rounded px-2 py-1 hover:bg-ink/10 disabled:opacity-25" aria-label="Turunkan" title="Turunkan">↓</button>
+                    <button name="action" value={r.published ? 'hide' : 'show'} class="rounded px-2 py-1 text-xs font-bold hover:bg-ink/10">{r.published ? 'Sembunyikan' : 'Tampilkan'}</button>
+                    <a href={`/admin/${res.key}/${r.id}`} class="rounded px-2 py-1 text-xs font-bold underline hover:bg-ink/10">Edit</a>
+                    <button name="action" value="delete" data-confirm={`Hapus ${res.singular} ini? Tidak bisa dibatalkan.`} class="rounded px-2 py-1 text-xs font-bold text-[#c22] hover:bg-[#c22]/10">Hapus</button>
+                  </form>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    )
+  }
+</AdminLayout>
+
+<script>
+  document.querySelectorAll<HTMLButtonElement>('[data-confirm]').forEach((b) =>
+    b.addEventListener('click', (e) => {
+      if (!confirm(b.dataset.confirm)) e.preventDefault();
+    }),
+  );
+</script>

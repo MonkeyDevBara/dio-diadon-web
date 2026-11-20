@@ -1,0 +1,74 @@
+---
+import '../../styles/global.css';
+import { COOKIE, SESSION_SECONDS, adminEnabled, checkPassword, createSession, loginBlockedFor, recordLogin, verifySession } from '../../server/auth';
+
+if (verifySession(Astro.cookies.get(COOKIE)?.value)) return Astro.redirect('/admin');
+
+const enabled = adminEnabled();
+let error = '';
+
+if (Astro.request.method === 'POST' && enabled) {
+  const ip = Astro.clientAddress;
+  const wait = loginBlockedFor(ip);
+  if (wait) {
+    error = `Terlalu banyak percobaan. Coba lagi dalam ${wait} menit.`;
+  } else {
+    const form = await Astro.request.formData();
+    const ok = checkPassword(String(form.get('password') ?? ''));
+    recordLogin(ip, ok);
+    if (ok) {
+      Astro.cookies.set(COOKIE, createSession(), {
+        httpOnly: true,
+        sameSite: 'strict',
+        secure: Astro.url.protocol === 'https:',
+        path: '/admin',
+        maxAge: SESSION_SECONDS,
+      });
+      return Astro.redirect('/admin');
+    }
+    error = 'Password salah.';
+  }
+}
+---
+
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex, nofollow" />
+    <title>Masuk · Admin Dio Diadon</title>
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <style is:global>body::before{display:none}</style>
+  </head>
+  <body class="grid min-h-screen place-items-center px-5">
+    <main class="w-full max-w-sm">
+      <div class="tape scribble-box bg-white p-7" style="--tape:rgb(238 106 31 / .5)">
+        <span class="grid h-11 w-11 place-items-center rounded-lg bg-dio pixel text-xl">D</span>
+        <h1 class="mt-3 text-2xl font-extrabold">Masuk admin</h1>
+        <p class="hand text-xl text-ink/60">khusus Dio & tim</p>
+
+        {
+          enabled ? (
+            <form method="post" class="mt-5 space-y-4">
+              <label class="block text-sm font-bold">
+                Password
+                <input type="password" name="password" required autofocus autocomplete="current-password" class="mt-1 w-full rounded-md border border-ink/25 px-3 py-2.5 focus:border-dio focus:outline-none focus:ring-2 focus:ring-dio/30" />
+              </label>
+              {error && <p class="text-sm font-semibold text-[#c22]" role="alert">{error}</p>}
+              <button class="btn w-full justify-center" type="submit">Masuk</button>
+            </form>
+          ) : (
+            <div class="mt-5 rounded-md bg-sun/60 p-4 text-sm" role="alert">
+              <p class="font-bold">Admin belum aktif.</p>
+              <p class="mt-1">
+                Set environment variable <code class="font-mono">ADMIN_PASSWORD</code> (minimal 8 karakter) di file <code class="font-mono">.env</code>, lalu restart server.
+              </p>
+            </div>
+          )
+        }
+      </div>
+      <p class="mt-4 text-center"><a href="/" class="mono text-xs underline">← ke website</a></p>
+    </main>
+  </body>
+</html>
